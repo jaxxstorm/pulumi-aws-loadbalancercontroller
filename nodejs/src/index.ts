@@ -13,17 +13,16 @@ export interface AWSLoadBalancerControllerArgs {
     ingress?: {
         class?: string
     }
+    vpc: {
+        id: string
+    }
 }
 
 export class AWSLoadBalancerController extends pulumi.ComponentResource {
     policy: aws.iam.Policy;
     role: aws.iam.Role;
-    serviceAccount: k8s.core.v1.ServiceAccount;
+    chart: k8s.helm.v3.Chart;
     namespace: k8s.core.v1.Namespace;
-    kubernetesRole: k8s.rbac.v1.Role;
-    roleBinding: k8s.rbac.v1.RoleBinding;
-    service: k8s.core.v1.Service;
-    deployment: k8s.apps.v1.Deployment;
     ingressClass: string = "alb";
 
     constructor(name: string, args: AWSLoadBalancerControllerArgs, opts?: pulumi.ComponentResourceOptions) {
@@ -37,27 +36,29 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
 
 
         const oidcUrlwithSub = `${oidcUrl}:sub`
-        const serviceAccountName = `system:serviceaccount:${args.namespace.name}:aws-load-balancer-controller`
+        const serviceAccountName = `system:serviceaccount:${args.namespace.name}:${name}-aws-load-balancer-controller-sa`
+
+        const policyData = {
+            "Version": "2012-10-17",
+            "Statement": [{
+                "Effect": "Allow",
+                "Principal": {
+                    "Federated": oidcArn,
+                },
+                "Action": "sts:AssumeRoleWithWebIdentity",
+                "Condition": {
+                    "StringEquals": {
+                        [oidcUrlwithSub]: serviceAccountName,
+                    }
+                }
+            }]
+        }
 
         this.ingressClass = (args.ingress?.class ?? "alb")
 
         // the role that can be used for the Kubernetes workload
         this.role = new aws.iam.Role(`${name}-role`, {
-            assumeRolePolicy: JSON.stringify({
-                "Version": "2012-10-17",
-                "Statement": [{
-                    "Effect": "Allow",
-                    "Principal": {
-                        "Federated": oidcArn,
-                    },
-                    "Action": "sts:AssumeRoleWithWebIdentity",
-                    "Condition": {
-                        "StringEquals": {
-                            oidcUrlwithSub: serviceAccountName,
-                        }
-                    }
-                }]
-            })
+            assumeRolePolicy: JSON.stringify(policyData)
 
         })
 
@@ -92,6 +93,28 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                     ],
                     "Resource": "*",
                 }, {
+                    "Effect": "Allow",
+                    "Action": [
+                        "cognito-idp:DescribeUserPoolClient",
+                        "acm:ListCertificates",
+                        "acm:DescribeCertificate",
+                        "iam:ListServerCertificates",
+                        "iam:GetServerCertificate",
+                        "waf-regional:GetWebACL",
+                        "waf-regional:GetWebACLForResource",
+                        "waf-regional:AssociateWebACL",
+                        "waf-regional:DisassociateWebACL",
+                        "wafv2:GetWebACL",
+                        "wafv2:GetWebACLForResource",
+                        "wafv2:AssociateWebACL",
+                        "wafv2:DisassociateWebACL",
+                        "shield:GetSubscriptionState",
+                        "shield:DescribeProtection",
+                        "shield:CreateProtection",
+                        "shield:DeleteProtection"
+                    ],
+                    "Resource": "*"
+                },{
                     "Effect": "Allow",
                     "Action": [
                         "ec2:AuthorizeSecurityGroupIngress",
@@ -235,173 +258,23 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
             })
         }
 
-        this.serviceAccount = new k8s.core.v1.ServiceAccount(`${name}-serviceaccount`, {
-            metadata: {
-                namespace: args.namespace.name,
-                labels: {
-                    "app.kubernetes.io/name": "aws-load-balancer-controller",
-                    "app.kubernetes.io/instance": name,
-                    "app.kubernetes.io/version": "v2.0.0",
-                }
-            }
-        })
+       this.chart = new k8s.helm.v3.Chart(`${name}-chart`, {
+           namespace: args.namespace.name,
+           chart: "aws-load-balancer-controller",
+           fetchOpts: { repo: "https://aws.github.io/eks-charts" },
+           values: {
+               serviceAccount: {
+                   create: true,
+                   name: `${name}-aws-load-balancer-controller-sa`,
+                   annotations: {
+                       "eks.amazonaws.com/role-arn": this.role.arn.apply(arn => arn)
+                   }
+               },
+               clusterName: args.cluster.name,
+               region: region,
+           }
 
-        this.kubernetesRole = new k8s.rbac.v1.Role(`${name}-role`, {
-            metadata: {
-                namespace: args.namespace.name,
-                labels: {
-                    "app.kubernetes.io/name": "aws-load-balancer-controller",
-                    "app.kubernetes.io/instance": name,
-                    "app.kubernetes.io/version": "v2.0.0",
-                }
-            },
-            rules: [
-                {
-                    apiGroups: [""],
-                    resources: ["configmaps"],
-                    verbs: ["create"],
-                },
-                {
-                    apiGroups: [""],
-                    resources: ["configmaps"],
-                    resourceNames: ["aws-load-balancer-controller-leader"],
-                    verbs: [
-                        "get",
-                        "patch",
-                        "update",
-                    ],
-                },
-            ],
-        });
-
-        this.roleBinding = new k8s.rbac.v1.RoleBinding(`${name}-rolebinding`, {
-            metadata: {
-                labels: {
-                    "app.kubernetes.io/name": "aws-load-balancer-controller",
-                    "app.kubernetes.io/instance": name,
-                    "app.kubernetes.io/version": "v2.0.0",
-                }
-            },
-            roleRef: {
-                apiGroup: "rbac.authorization.k8s.io",
-                kind: "Role",
-                name: `${name}-aws-load-balancer-controller-leader-election-role`,
-            },
-            subjects: [{
-                kind: "ServiceAccount",
-                name: `${name}-aws-load-balancer-controller`,
-                namespace: args.namespace.name,
-            }],
-        }, { parent: this.role });
-
-        this.service = new k8s.core.v1.Service(`${name}-service`, {
-            metadata: {
-                name: "aws-load-balancer-webhook-service",
-                labels: {
-                    "app.kubernetes.io/name": "aws-load-balancer-controller",
-                    "app.kubernetes.io/instance": name,
-                    "app.kubernetes.io/version": "v2.0.0",
-                },
-            },
-            spec: {
-                ports: [{
-                    port: 443,
-                    targetPort: 9443,
-                }],
-                selector: {
-                    "app.kubernetes.io/name": "aws-load-balancer-controller",
-                    "app.kubernetes.io/instance": name,
-                },
-            },
-        });
-
-        this.deployment = new k8s.apps.v1.Deployment(`${name}-deployment`, {
-            metadata: {
-                labels: {
-                    "app.kubernetes.io/name": "aws-load-balancer-controller",
-                    "app.kubernetes.io/instance": name,
-                    "app.kubernetes.io/version": "v2.0.0",
-                },
-            },
-            spec: {
-                replicas: 1,
-                selector: {
-                    matchLabels: {
-                        "app.kubernetes.io/name": "aws-load-balancer-controller",
-                        "app.kubernetes.io/instance": name,
-                    },
-                },
-                template: {
-                    metadata: {
-                        labels: {
-                            "app.kubernetes.io/name": "aws-load-balancer-controller",
-                            "app.kubernetes.io/instance": name,
-                        },
-                        annotations: {
-                            "prometheus.io/scrape": "true",
-                            "prometheus.io/port": "8080",
-                        },
-                    },
-                    spec: {
-                        serviceAccountName: this.serviceAccount.metadata.name,
-                        volumes: [{
-                            name: "cert",
-                            secret: {
-                                defaultMode: 420,
-                                secretName: "aws-load-balancer-tls",
-                            },
-                        }],
-                        securityContext: {
-                            fsGroup: 65534,
-                        },
-                        containers: [{
-                            name: "aws-load-balancer-controller",
-                            args: [
-                                `--cluster-name=${args.cluster.name}`,
-                                `--ingress-class=${this.ingressClass}`,
-                            ],
-                            command: ["/controller"],
-                            securityContext: {
-                                allowPrivilegeEscalation: false,
-                                readOnlyRootFilesystem: true,
-                                runAsNonRoot: true,
-                            },
-                            image: "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller:v2.0.0",
-                            imagePullPolicy: "IfNotPresent",
-                            volumeMounts: [{
-                                mountPath: "/tmp/k8s-webhook-server/serving-certs",
-                                name: "cert",
-                                readOnly: true,
-                            }],
-                            ports: [
-                                {
-                                    name: "webhook-server",
-                                    containerPort: 9443,
-                                    protocol: "TCP",
-                                },
-                                {
-                                    name: "metrics-server",
-                                    containerPort: 8080,
-                                    protocol: "TCP",
-                                },
-                            ],
-                            resources: {},
-                            livenessProbe: {
-                                failureThreshold: 2,
-                                httpGet: {
-                                    path: "/healthz",
-                                    port: 61779,
-                                    scheme: "HTTP",
-                                },
-                                initialDelaySeconds: 30,
-                                timeoutSeconds: 10,
-                            },
-                        }],
-                        terminationGracePeriodSeconds: 10,
-                    },
-                },
-            },
-        });
+       })
 
 
 
