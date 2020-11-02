@@ -602,7 +602,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                                 readOnlyRootFilesystem: true,
                                 runAsNonRoot: true,
                             },
-                            image: "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller:v2.0.0",
+                            image: `${this.image}:${this.version}`,
                             imagePullPolicy: "IfNotPresent",
                             volumeMounts: [{
                                 mountPath: "/tmp/k8s-webhook-server/serving-certs",
