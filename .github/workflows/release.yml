@@ -28,7 +28,7 @@ jobs:
           make dist
       - name: Publish
         run: |
-          npm publish artifacts/nodejs --public
+          npm publish --public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create Release
