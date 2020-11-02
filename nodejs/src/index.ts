@@ -11,11 +11,11 @@ export interface AWSLoadBalancerControllerArgs {
     cluster: {
         name: string
     }
-    ingress: {
+    ingress?: {
         class?: string
     }
     installCRD: boolean
-    app: {
+    app?: {
         version?: string
         image?: string
     }
