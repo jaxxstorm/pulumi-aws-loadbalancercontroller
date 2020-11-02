@@ -1,0 +1,45 @@
+env:
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+name: release
+"on":
+  push:
+    tags:
+    - v*.*.*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Unshallow clone for tags
+        run: git fetch --prune --unshallow --tags
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+          registry-url: https://registry.npmjs.org
+      - name: Bootstrap
+        run: |
+          npm ci
+      - name: Build
+        run: |
+          make dist
+      - name: Publish
+        run: |
+          npm publish artifacts/nodejs --public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+

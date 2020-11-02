@@ -105,3 +105,6 @@ dist
 
 # Personal
 .idea
+
+# Build dirs
+**/artifacts

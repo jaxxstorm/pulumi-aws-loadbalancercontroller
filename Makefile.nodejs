@@ -1,7 +1,7 @@
 SHELL = bash
 MAKEFILE_ROOT := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
-ARTIFACT_OUT_DIR := $(MAKEFILE_ROOT)/../out/nodejs
+ARTIFACT_OUT_DIR := $(MAKEFILE_ROOT)/artifacts/nodejs
 
 START_TASK = @echo -e "\033[0;32m==> $(1)...\033[0m"
 START_TARGET = @echo -e "\033[0;35m==> Started target '$@'\033[0m"
