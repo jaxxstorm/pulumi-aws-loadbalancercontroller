@@ -29,6 +29,7 @@ lint:
 	$(call DONE_TARGET)
 
 .PHONY: dist
+dist: VERSION := $(shell pulumictl get version --language javascript)
 dist:
 	$(call START_TARGET)
 	$(call START_TASK,Copying README.md and license...)

@@ -1,6 +1,7 @@
 import * as aws from "@pulumi/aws";
 import * as pulumi from "@pulumi/pulumi"
 import * as k8s from "@pulumi/kubernetes"
+import * as tls from "@pulumi/tls"
 
 export interface AWSLoadBalancerControllerArgs {
     namespace: {
@@ -10,11 +11,13 @@ export interface AWSLoadBalancerControllerArgs {
     cluster: {
         name: string
     }
-    ingress?: {
+    ingress: {
         class?: string
     }
-    vpc: {
-        id: string
+    installCRD: boolean
+    app: {
+        version?: string
+        image?: string
     }
 }
 
@@ -23,7 +26,28 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
     role: aws.iam.Role;
     chart: k8s.helm.v3.Chart;
     namespace: k8s.core.v1.Namespace;
+
+    // k8s
+    serviceAccount: k8s.core.v1.ServiceAccount;
+    tlsSecret: k8s.core.v1.Secret;
+    clusterRole: k8s.rbac.v1.ClusterRole;
+    clusterRoleBinding: k8s.rbac.v1.ClusterRoleBinding;
+    kubernetesRole: k8s.rbac.v1.Role;
+    roleBinding: k8s.rbac.v1.RoleBinding;
+    webhookService: k8s.core.v1.Service;
+    validatingWebhook: k8s.admissionregistration.v1.ValidatingWebhookConfiguration;
+    deployment: k8s.apps.v1.Deployment;
+    mutatingWebhook: k8s.admissionregistration.v1.MutatingWebhookConfiguration;
+    caKey: tls.PrivateKey;
+    caCert: tls.SelfSignedCert;
+    certKey: tls.PrivateKey;
+    certRequest: tls.CertRequest;
+    cert: tls.LocallySignedCert;
+
     ingressClass: string = "alb";
+    version: string = "v2.0.0";
+    image: string = "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller";
+    installCRD: boolean = true;
 
     constructor(name: string, args: AWSLoadBalancerControllerArgs, opts?: pulumi.ComponentResourceOptions) {
         super("jaxxstorm:aws:loadbalancercontroller", name, {}, opts);
@@ -36,7 +60,12 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
 
 
         const oidcUrlwithSub = `${oidcUrl}:sub`
-        const serviceAccountName = `system:serviceaccount:${args.namespace.name}:${name}-aws-load-balancer-controller-sa`
+        const serviceAccountName = `system:serviceaccount:${args.namespace.name}:${name}-serviceaccount`
+
+        this.ingressClass = (args.ingress?.class ?? "alb")
+        this.installCRD = (args.installCRD ?? true)
+        this.version = (args.app?.version ?? "v2.0.0")
+        this.image = (args.app?.image ?? "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller")
 
         const policyData = {
             "Version": "2012-10-17",
@@ -54,12 +83,10 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
             }]
         }
 
-        this.ingressClass = (args.ingress?.class ?? "alb")
 
         // the role that can be used for the Kubernetes workload
         this.role = new aws.iam.Role(`${name}-role`, {
             assumeRolePolicy: JSON.stringify(policyData)
-
         })
 
         // The IAM policy need for the controller to operate correctly
@@ -245,6 +272,29 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
             roles: [ this.role.name ]
         }, { parent: this.policy } )
 
+
+        // Create a certificate for the webhook
+        this.caKey = new tls.PrivateKey(`${name}-ca-privatekey`, {
+            algorithm: "RSA",
+            ecdsaCurve: "P256",
+            rsaBits: 2048,
+        })
+
+        this.caCert = new tls.SelfSignedCert(`${name}-ca-cert`, {
+            keyAlgorithm: this.caKey.algorithm,
+            privateKeyPem: this.caKey.privateKeyPem,
+            isCaCertificate: true,
+            validityPeriodHours: 88600,
+            allowedUses: [
+                "cert_signing",
+                "key_encipherment",
+                "digital_signature",
+            ],
+            subjects: [{
+                commonName: `${name}-aws-load-balancer-controller`,
+            }]
+        })
+
         if (args.namespace.create) {
             this.namespace = new k8s.core.v1.Namespace(`${name}-namespace`, {
                 metadata: {
@@ -252,32 +302,443 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                     labels: {
                         "app.kubernetes.io/name": "aws-load-balancer-controller",
                         "app.kubernetes.io/instance": name,
-                        "app.kubernetes.io/version": "v2.0.0",
                     }
                 }
             })
         }
 
-       this.chart = new k8s.helm.v3.Chart(`${name}-chart`, {
-           namespace: args.namespace.name,
-           chart: "aws-load-balancer-controller",
-           fetchOpts: { repo: "https://aws.github.io/eks-charts" },
-           values: {
-               serviceAccount: {
-                   create: true,
-                   name: `${name}-aws-load-balancer-controller-sa`,
-                   annotations: {
-                       "eks.amazonaws.com/role-arn": this.role.arn.apply(arn => arn)
-                   }
-               },
-               clusterName: args.cluster.name,
-               region: region,
-           }
+        this.serviceAccount = new k8s.core.v1.ServiceAccount(`${name}-serviceAccount`, {
+            metadata: {
+                name: `${name}-serviceaccount`,
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
 
-       })
+                },
+                annotations: {
+                    "eks.amazonaws.com/role-arn": this.role.arn.apply(arn => arn),
+                },
+                namespace: args.namespace.name,
+            },
+        });
 
+        this.clusterRole = new k8s.rbac.v1.ClusterRole(`${name}-clusterrole`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+            },
+            rules: [
+                {
+                    apiGroups: ["elbv2.k8s.aws"],
+                    resources: ["targetgroupbindings"],
+                    verbs: [
+                        "create",
+                        "delete",
+                        "get",
+                        "list",
+                        "patch",
+                        "update",
+                        "watch",
+                    ],
+                },
+                {
+                    apiGroups: [""],
+                    resources: ["events"],
+                    verbs: [
+                        "create",
+                        "patch",
+                    ],
+                },
+                {
+                    apiGroups: [""],
+                    resources: ["pods"],
+                    verbs: [
+                        "get",
+                        "list",
+                        "watch",
+                    ],
+                },
+                {
+                    apiGroups: [
+                        "",
+                        "extensions",
+                        "networking.k8s.io",
+                    ],
+                    resources: [
+                        "services",
+                        "ingresses",
+                    ],
+                    verbs: [
+                        "get",
+                        "list",
+                        "patch",
+                        "update",
+                        "watch",
+                    ],
+                },
+                {
+                    apiGroups: [""],
+                    resources: [
+                        "nodes",
+                        "secrets",
+                        "namespaces",
+                        "endpoints",
+                    ],
+                    verbs: [
+                        "get",
+                        "list",
+                        "watch",
+                    ],
+                },
+                {
+                    apiGroups: [
+                        "elbv2.k8s.aws",
+                        "",
+                        "extensions",
+                        "networking.k8s.io",
+                    ],
+                    resources: [
+                        "targetgroupbindings/status",
+                        "pods/status",
+                        "services/status",
+                        "ingresses/status",
+                    ],
+                    verbs: [
+                        "update",
+                        "patch",
+                    ],
+                },
+            ],
+        });
+        this.clusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding(`${name}-clusterrolebinding`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+            },
+            roleRef: {
+                apiGroup: "rbac.authorization.k8s.io",
+                kind: "ClusterRole",
+                name: this.clusterRole.metadata.name,
+            },
+            subjects: [{
+                kind: "ServiceAccount",
+                name: this.serviceAccount.metadata.name,
+                namespace: args.namespace.name,
+            }],
+        }, { parent: this.clusterRole });
 
+        this.kubernetesRole = new k8s.rbac.v1.Role(`${name}-role`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+                namespace: args.namespace.name,
+            },
+            rules: [
+                {
+                    apiGroups: [""],
+                    resources: ["configmaps"],
+                    verbs: ["create"],
+                },
+                {
+                    apiGroups: [""],
+                    resources: ["configmaps"],
+                    resourceNames: ["aws-load-balancer-controller-leader"],
+                    verbs: [
+                        "get",
+                        "patch",
+                        "update",
+                    ],
+                },
+            ],
+        });
 
+        this.roleBinding = new k8s.rbac.v1.RoleBinding(`${name}-rolebinding`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+                namespace: args.namespace.name,
+            },
+            roleRef: {
+                apiGroup: "rbac.authorization.k8s.io",
+                kind: "Role",
+                name: this.kubernetesRole.metadata.name,
+            },
+            subjects: [{
+                kind: "ServiceAccount",
+                name: this.serviceAccount.metadata.name,
+                namespace: args.namespace.name,
+            }],
+        }, { parent: this.kubernetesRole } );
+
+        this.webhookService = new k8s.core.v1.Service(`${name}-webhook-service`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+                namespace: args.namespace.name,
+                annotations: {
+                    "pulumi.com/skipAwait": "true",
+                }
+            },
+            spec: {
+                ports: [{
+                    port: 443,
+                    targetPort: 9443,
+                }],
+                selector: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+            },
+        });
+
+        this.certKey = new tls.PrivateKey(`${name}-cert-privatekey`, {
+            algorithm: "RSA",
+            ecdsaCurve: "P256",
+            rsaBits: 2048,
+        })
+
+        this.certRequest = new tls.CertRequest(`${name}-cert-request`, {
+            keyAlgorithm: "RSA",
+            privateKeyPem: this.certKey.privateKeyPem,
+            dnsNames: [
+                this.webhookService.metadata.name.apply(name => `${name}.${args.namespace.name}`),
+                this.webhookService.metadata.name.apply(name => `${name}.${args.namespace.name}.svc`)
+            ],
+            subjects: [{
+                commonName: this.webhookService.metadata.name
+            }]
+        })
+
+        this.cert = new tls.LocallySignedCert(`${name}-cert`, {
+            certRequestPem: this.certRequest.certRequestPem,
+            caKeyAlgorithm: this.caKey.algorithm,
+            caPrivateKeyPem: this.caKey.privateKeyPem,
+            caCertPem: this.caCert.certPem,
+            validityPeriodHours: 88600,
+            allowedUses: [
+                "key_encipherment",
+                "digital_signature",
+            ]
+        })
+
+        this.tlsSecret = new k8s.core.v1.Secret(`${name}-tls-secret`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+                namespace: args.namespace.name,
+            },
+            type: "kubernetes.io/tls",
+            stringData: {
+                "ca.crt": this.caCert.certPem,
+                "tls.crt": this.cert.certPem,
+                "tls.key": this.certKey.privateKeyPem,
+            },
+
+        });
+
+        let deploymentArgs = [
+            `--cluster-name=${args.cluster.name}`,
+            `--ingress-class=${this.ingressClass}`,
+            `--aws-region=${region}`
+        ]
+
+        this.deployment = new k8s.apps.v1.Deployment(`${name}-controller-deployment`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+                namespace: args.namespace.name,
+            },
+            spec: {
+                replicas: 1,
+                selector: {
+                    matchLabels: {
+                        "app.kubernetes.io/name": "aws-load-balancer-controller",
+                        "app.kubernetes.io/instance": name,
+                    },
+                },
+                template: {
+                    metadata: {
+                        labels: {
+                            "app.kubernetes.io/name": "aws-load-balancer-controller",
+                            "app.kubernetes.io/instance": name,
+                        },
+                        annotations: {
+                            "prometheus.io/scrape": "true",
+                            "prometheus.io/port": "8080",
+                        },
+                    },
+                    spec: {
+                        serviceAccountName: this.serviceAccount.metadata.name,
+                        volumes: [{
+                            name: "cert",
+                            secret: {
+                                defaultMode: 420,
+                                secretName: this.tlsSecret.metadata.name,
+                            },
+                        }],
+                        securityContext: {
+                            fsGroup: 65534,
+                        },
+                        containers: [{
+                            name: "aws-load-balancer-controller",
+                            args: deploymentArgs,
+                            command: ["/controller"],
+                            securityContext: {
+                                allowPrivilegeEscalation: false,
+                                readOnlyRootFilesystem: true,
+                                runAsNonRoot: true,
+                            },
+                            image: "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller:v2.0.0",
+                            imagePullPolicy: "IfNotPresent",
+                            volumeMounts: [{
+                                mountPath: "/tmp/k8s-webhook-server/serving-certs",
+                                name: "cert",
+                                readOnly: true,
+                            }],
+                            ports: [
+                                {
+                                    name: "webhook-server",
+                                    containerPort: 9443,
+                                    protocol: "TCP",
+                                },
+                                {
+                                    name: "metrics-server",
+                                    containerPort: 8080,
+                                    protocol: "TCP",
+                                },
+                            ],
+                            resources: {},
+                            livenessProbe: {
+                                failureThreshold: 2,
+                                httpGet: {
+                                    path: "/healthz",
+                                    port: 61779,
+                                    scheme: "HTTP",
+                                },
+                                initialDelaySeconds: 30,
+                                timeoutSeconds: 10,
+                            },
+                        }],
+                        terminationGracePeriodSeconds: 10,
+                    },
+                },
+            },
+        });
+
+        this.mutatingWebhook = new k8s.admissionregistration.v1.MutatingWebhookConfiguration(`${name}-mutating-webhook`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+                namespace: args.namespace.name,
+            },
+            webhooks: [
+                {
+                    clientConfig: {
+                        caBundle: this.caCert.certPem.apply(pem => Buffer.from(pem).toString("base64")),
+                        service: {
+                            name: this.webhookService.metadata.name,
+                            namespace: args.namespace.name,
+                            path: "/mutate-v1-pod",
+                        },
+                    },
+                    failurePolicy: "Fail",
+                    name: "mpod.elbv2.k8s.aws",
+                    admissionReviewVersions: ["v1beta1"],
+                    namespaceSelector: {
+                        matchExpressions: [{
+                            key: "elbv2.k8s.aws/pod-readiness-gate-inject",
+                            operator: "In",
+                            values: ["enabled"],
+                        }],
+                    },
+                    rules: [{
+                        apiGroups: [""],
+                        apiVersions: ["v1"],
+                        operations: ["CREATE"],
+                        resources: ["pods"],
+                    }],
+                    sideEffects: "None",
+                },
+                {
+                    clientConfig: {
+                        caBundle: this.caCert.certPem.apply(pem => Buffer.from(pem).toString("base64")),
+                        service: {
+                            name: this.webhookService.metadata.name,
+                            namespace: args.namespace.name,
+                            path: "/mutate-elbv2-k8s-aws-v1beta1-targetgroupbinding",
+                        },
+                    },
+                    failurePolicy: "Fail",
+                    name: "mtargetgroupbinding.elbv2.k8s.aws",
+                    admissionReviewVersions: ["v1beta1"],
+                    rules: [{
+                        apiGroups: ["elbv2.k8s.aws"],
+                        apiVersions: ["v1beta1"],
+                        operations: [
+                            "CREATE",
+                            "UPDATE",
+                        ],
+                        resources: ["targetgroupbindings"],
+                    }],
+                    sideEffects: "None",
+                },
+            ],
+        });
+        this.validatingWebhook = new k8s.admissionregistration.v1.ValidatingWebhookConfiguration(`${name}-validating-webhook`, {
+            metadata: {
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
+                },
+                namespace: args.namespace.name,
+            },
+            webhooks: [{
+                clientConfig: {
+                    caBundle: this.caCert.certPem.apply(pem => Buffer.from(pem).toString("base64")),
+                    service: {
+                        name: this.webhookService.metadata.name,
+                        namespace: args.namespace.name,
+                        path: "/validate-elbv2-k8s-aws-v1beta1-targetgroupbinding",
+                    },
+                },
+                failurePolicy: "Fail",
+                name: "vtargetgroupbinding.elbv2.k8s.aws",
+                admissionReviewVersions: ["v1beta1"],
+                rules: [{
+                    apiGroups: ["elbv2.k8s.aws"],
+                    apiVersions: ["v1beta1"],
+                    operations: [
+                        "CREATE",
+                        "UPDATE",
+                    ],
+                    resources: ["targetgroupbindings"],
+                }],
+                sideEffects: "None",
+            }],
+        });
+
+        if (this.installCRD) {
+            new k8s.yaml.ConfigFile(`${name}-crd`, {
+                file: "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/6ed50eba295fc76467cb2d31d2ad0661463d96ce/config/crd/bases/elbv2.k8s.aws_targetgroupbindings.yaml",
+            })
+
+        }
 
         this.registerOutputs({});
     }
