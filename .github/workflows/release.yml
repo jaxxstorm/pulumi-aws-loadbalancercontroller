@@ -20,9 +20,6 @@ jobs:
         with:
           node-version: 14.x
           registry-url: https://registry.npmjs.org
-      - name: Bootstrap
-        run: |
-          npm ci
       - name: Build
         run: |
           make dist
