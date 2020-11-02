@@ -14,6 +14,8 @@ NPM_TAG := "latest"
 .PHONY: bootstrap
 bootstrap:
 	$(call START_TARGET)
+	$(call START_TASK,Generate package.json for $(VERSION)...)
+	sed -e 's/\$${VERSION}/$(VERSION)/g' < package.tmpl.json > package.json
 	$(call START_TASK,Installing Node.js packages via npm)
 	npm install
 	$(call DONE_TARGET)
