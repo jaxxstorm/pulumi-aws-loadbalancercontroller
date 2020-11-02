@@ -41,3 +41,8 @@ dist:
 	$(call START_TASK,Removing copied files...)
 	rm -r $(MAKEFILE_ROOT)/nodejs/LICENSE $(MAKEFILE_ROOT)/nodejs/README.md
 	$(call DONE_TARGET)
+
+publish:
+	cd $(ARTIFACT_OUT_DIR) && npm publish $(MAKEFILE_ROOT)
+	$(call START_TASK,Publishing package...)
+	$(call DONE_TARGET)

@@ -28,7 +28,7 @@ jobs:
           make dist
       - name: Publish
         run: |
-          npm publish --public
+          make publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create Release

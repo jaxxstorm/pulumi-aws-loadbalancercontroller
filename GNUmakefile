@@ -19,5 +19,9 @@ test:
 dist:
 	@$(MAKE) -f $(NODEJS_MAKEFILE) $@
 
-.PHONY: travis
-travis: bootstrap test lint dist
+.PHONY: publish
+publish:
+	@$(MAKE) -f $(NODEJS_MAKEFILE) $@
+
+.PHONY: ci
+ci: bootstrap test lint dist
