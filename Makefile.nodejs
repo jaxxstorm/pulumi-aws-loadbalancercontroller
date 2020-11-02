@@ -43,6 +43,6 @@ dist:
 	$(call DONE_TARGET)
 
 publish:
-	cd $(ARTIFACT_OUT_DIR) && npm publish --public $(MAKEFILE_ROOT)
+	cd $(ARTIFACT_OUT_DIR) && npm publish --access=public $(MAKEFILE_ROOT)
 	$(call START_TASK,Publishing package...)
 	$(call DONE_TARGET)
