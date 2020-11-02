@@ -7,6 +7,10 @@ START_TASK = @echo -e "\033[0;32m==> $(1)...\033[0m"
 START_TARGET = @echo -e "\033[0;35m==> Started target '$@'\033[0m"
 DONE_TARGET = @echo -e "\033[0;35m==> Completed target '$@'\033[0m"
 
+VERSION := $(shell pulumictl get version --language javascript)
+
+NPM_TAG := "latest"
+
 .PHONY: bootstrap
 bootstrap:
 	$(call START_TARGET)
@@ -34,6 +38,8 @@ dist:
 	$(call START_TASK,Copying README.md and license...)
 	cp $(MAKEFILE_ROOT)/LICENSE $(MAKEFILE_ROOT)/nodejs
 	cp $(MAKEFILE_ROOT)/README.md $(MAKEFILE_ROOT)/nodejs
+	$(call START_TASK,Updating package version to $(VERSION)...)
+	sed -e 's/\$${VERSION}/$(VERSION)/g' < package.tmpl.json > package.json
 	$(call START_TASK,Building npm package...)
 	mkdir -p $(ARTIFACT_OUT_DIR)
 	npm run build
@@ -43,6 +49,6 @@ dist:
 	$(call DONE_TARGET)
 
 publish:
-	cd $(ARTIFACT_OUT_DIR) && npm publish --access=public $(MAKEFILE_ROOT)
+	cd $(ARTIFACT_OUT_DIR) && npm publish --tag=$(NPM_TAG) --access=public $(MAKEFILE_ROOT)
 	$(call START_TASK,Publishing package...)
 	$(call DONE_TARGET)

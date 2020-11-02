@@ -1,6 +1,6 @@
 {
   "name": "@jaxxstorm/pulumi-aws-loadbalancercontroller",
-  "version": "0.0.2",
+  "version": "${VERSION}",
   "description": "Install the AWS Load Balancer Controller",
   "author": "Lee Briggs",
   "license": "MPL-2.0",

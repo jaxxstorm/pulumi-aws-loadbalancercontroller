@@ -1,0 +1,35 @@
+env:
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+name: master
+"on":
+  push:
+    branches:
+    - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Unshallow clone for tags
+        run: git fetch --prune --unshallow --tags
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+          registry-url: https://registry.npmjs.org
+      - name: Install Deps
+        run: |
+          npm ci
+      - name: Build
+        run: |
+          make dist
+      - name: Publish
+        run: |
+          make publish NPM_TAG=dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+
