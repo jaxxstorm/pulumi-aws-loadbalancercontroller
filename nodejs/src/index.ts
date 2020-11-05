@@ -5,7 +5,6 @@ import * as tls from "@pulumi/tls"
 
 export interface AWSLoadBalancerControllerArgs {
     namespace: {
-        create: boolean;
         name: string;
     }
     cluster: {
@@ -87,7 +86,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
         // the role that can be used for the Kubernetes workload
         this.role = new aws.iam.Role(`${name}-role`, {
             assumeRolePolicy: JSON.stringify(policyData)
-        })
+        }, { parent: this })
 
         // The IAM policy need for the controller to operate correctly
         this.policy = new aws.iam.Policy(`${name}-policy`, {
@@ -278,7 +277,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
             algorithm: "RSA",
             ecdsaCurve: "P256",
             rsaBits: 2048,
-        })
+        }, { parent: this } )
 
         this.caCert = new tls.SelfSignedCert(`${name}-ca-cert`, {
             keyAlgorithm: this.caKey.algorithm,
@@ -293,19 +292,17 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
             subjects: [{
                 commonName: `${name}-aws-load-balancer-controller`,
             }]
-        })
+        }, { parent: this.caKey } )
 
-        if (args.namespace.create) {
-            this.namespace = new k8s.core.v1.Namespace(`${name}-namespace`, {
-                metadata: {
-                    name: args.namespace.name,
-                    labels: {
-                        "app.kubernetes.io/name": "aws-load-balancer-controller",
-                        "app.kubernetes.io/instance": name,
-                    }
+        this.namespace = new k8s.core.v1.Namespace(`${name}-namespace`, {
+            metadata: {
+                name: args.namespace.name,
+                labels: {
+                    "app.kubernetes.io/name": "aws-load-balancer-controller",
+                    "app.kubernetes.io/instance": name,
                 }
-            })
-        }
+            }
+        }, { parent: this })
 
         this.serviceAccount = new k8s.core.v1.ServiceAccount(`${name}-serviceAccount`, {
             metadata: {
@@ -320,7 +317,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                 },
                 namespace: args.namespace.name,
             },
-        });
+        }, { parent: this.namespace });
 
         this.clusterRole = new k8s.rbac.v1.ClusterRole(`${name}-clusterrole`, {
             metadata: {
@@ -411,7 +408,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                     ],
                 },
             ],
-        });
+        }, { parent: this });
         this.clusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding(`${name}-clusterrolebinding`, {
             metadata: {
                 labels: {
@@ -429,7 +426,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                 name: this.serviceAccount.metadata.name,
                 namespace: args.namespace.name,
             }],
-        }, { parent: this.clusterRole });
+        }, { parent: this.namespace });
 
         this.kubernetesRole = new k8s.rbac.v1.Role(`${name}-role`, {
             metadata: {
@@ -456,7 +453,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                     ],
                 },
             ],
-        });
+        }, { parent: this.namespace });
 
         this.roleBinding = new k8s.rbac.v1.RoleBinding(`${name}-rolebinding`, {
             metadata: {
@@ -499,13 +496,13 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                     "app.kubernetes.io/instance": name,
                 },
             },
-        });
+        }, { parent: this.namespace });
 
         this.certKey = new tls.PrivateKey(`${name}-cert-privatekey`, {
             algorithm: "RSA",
             ecdsaCurve: "P256",
             rsaBits: 2048,
-        })
+        }, { parent: this })
 
         this.certRequest = new tls.CertRequest(`${name}-cert-request`, {
             keyAlgorithm: "RSA",
@@ -517,7 +514,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
             subjects: [{
                 commonName: this.webhookService.metadata.name
             }]
-        })
+        }, { parent: this.certKey })
 
         this.cert = new tls.LocallySignedCert(`${name}-cert`, {
             certRequestPem: this.certRequest.certRequestPem,
@@ -529,7 +526,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                 "key_encipherment",
                 "digital_signature",
             ]
-        })
+        }, { parent: this.certKey })
 
         this.tlsSecret = new k8s.core.v1.Secret(`${name}-tls-secret`, {
             metadata: {
@@ -546,7 +543,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                 "tls.key": this.certKey.privateKeyPem,
             },
 
-        });
+        }, { parent: this.namespace, dependsOn: [this.certKey, this.cert, this.certRequest ] });
 
         let deploymentArgs = [
             `--cluster-name=${args.cluster.name}`,
@@ -637,7 +634,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                     },
                 },
             },
-        });
+        }, { parent: this.namespace });
 
         this.mutatingWebhook = new k8s.admissionregistration.v1.MutatingWebhookConfiguration(`${name}-mutating-webhook`, {
             metadata: {
@@ -699,7 +696,7 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                     sideEffects: "None",
                 },
             ],
-        });
+        }, { parent: this });
         this.validatingWebhook = new k8s.admissionregistration.v1.ValidatingWebhookConfiguration(`${name}-validating-webhook`, {
             metadata: {
                 labels: {
@@ -731,13 +728,12 @@ export class AWSLoadBalancerController extends pulumi.ComponentResource {
                 }],
                 sideEffects: "None",
             }],
-        });
+        }, { parent: this });
 
         if (this.installCRD) {
             new k8s.yaml.ConfigFile(`${name}-crd`, {
                 file: "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/6ed50eba295fc76467cb2d31d2ad0661463d96ce/config/crd/bases/elbv2.k8s.aws_targetgroupbindings.yaml",
-            })
-
+            }, { parent: this })
         }
 
         this.registerOutputs({});
