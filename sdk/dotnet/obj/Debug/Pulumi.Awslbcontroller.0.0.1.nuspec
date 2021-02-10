@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Pulumi.Awslbcontroller</id>
+    <version>0.0.1</version>
+    <authors>Pulumi Corp.</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <icon>logo.png</icon>
+    <projectUrl>https://pulumi.com/</projectUrl>
+    <description>Pulumi Amazon Web Services (AWS) Kubernetes Load Balancer Controller Component</description>
+    <repository type="git" url="https://github.com/jaxxstorm/pulumi-aws-loadbalancercontroller" commit="4da53fb245ef04fdada76f84a40b19e97a1ab49e" />
+    <dependencies>
+      <group targetFramework=".NETCoreApp3.1">
+        <dependency id="Pulumi" version="2.20.0" exclude="Build,Analyzers" />
+        <dependency id="Pulumi.Aws" version="3.28.0" exclude="Build,Analyzers" />
+        <dependency id="Pulumi.Kubernetes" version="2.8.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <contentFiles>
+      <files include="any/netcoreapp3.1/version.txt" buildAction="Content" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <file src="/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/bin/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.pdb" target="lib/netcoreapp3.1/Pulumi.Awslbcontroller.pdb" />
+    <file src="/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/bin/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.dll" target="lib/netcoreapp3.1/Pulumi.Awslbcontroller.dll" />
+    <file src="/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/bin/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.xml" target="lib/netcoreapp3.1/Pulumi.Awslbcontroller.xml" />
+    <file src="/Users/lbriggs/.nuget/packages/pulumi.kubernetes/2.8.0/contentFiles/any/netcoreapp3.1/version.txt" target="content/version.txt" />
+    <file src="/Users/lbriggs/.nuget/packages/pulumi.kubernetes/2.8.0/contentFiles/any/netcoreapp3.1/version.txt" target="contentFiles/any/netcoreapp3.1/version.txt" />
+    <file src="/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/logo.png" target="logo.png" />
+  </files>
+</package>

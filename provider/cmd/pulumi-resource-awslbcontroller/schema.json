@@ -1,0 +1,60 @@
+{
+    "name": "awslbcontroller",
+    "description": "Pulumi Amazon Web Services (AWS) Kubernetes Load Balancer Controller Component",
+    "keywords": [
+        "pulumi",
+        "aws",
+        "loadbalancercontroller"
+    ],
+    "homepage": "https://pulumi.com",
+    "license": "Apache-2.0",
+    "repository": "https://github.com/jaxxstorm/pulumi-aws-loadbalancercontroller",
+    "config": {},
+    "provider": {},
+    "resources": {
+        "awslbcontroller:index:awslbcontroller": {
+            "inputProperties": {
+                "createNamespace": {
+                    "type": "boolean",
+                    "description": "Specifies whether you'd like to create a new namespace to install"
+                },
+                "namespace": {
+                    "type": "string",
+                    "description": "Specifies the namespace to install your resources in"
+                }
+            },
+            "isComponent": true
+        }
+    },
+    "language": {
+        "csharp": {
+            "packageReferences": {
+                "Pulumi": "2.*",
+                "Pulumi.Aws": "3.*",
+                "Pulumi.Kubernetes": "2.*"
+            }
+        },
+        "go": {
+            "generateResourceContainerTypes": true,
+            "importBasePath": "github.com/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/go/vpc"
+        },
+        "nodejs": {
+            "dependencies": {
+                "@pulumi/aws": "^3.28.0",
+                "@pulumi/kubernetes": "^2.8.0"
+            },
+            "devDependencies": {
+                "typescript": "^3.7.0"
+            },
+            "packageName": "@jaxxstorm/pulumi-aws-loadbalancercontroller"
+        },
+        "python": {
+            "readme": "Pulumi Amazon Web Services (AWS) Kubernetes Load Balancer Controller Component.",
+            "requires": {
+                "pulumi": "\u003e=2.20.0,\u003c3.0.0",
+                "pulumi-aws": "\u003e=3.28.0,\u003c4.0.0",
+                "pulumi-kubernetes": "\u003ev2.8.0,\u003c3.0.0"
+            }
+        }
+    }
+}

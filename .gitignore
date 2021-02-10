@@ -109,3 +109,4 @@ dist
 # Build dirs
 **/artifacts
 package.json
+**/bin

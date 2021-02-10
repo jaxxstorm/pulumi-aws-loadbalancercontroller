@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Pulumi.Awslbcontroller</name>
+    </assembly>
+    <members>
+        <member name="M:Pulumi.Awslbcontroller.Awslbcontroller.#ctor(System.String,Pulumi.Awslbcontroller.AwslbcontrollerArgs,Pulumi.ComponentResourceOptions)">
+             <summary>
+             Create a Awslbcontroller resource with the given unique name, arguments, and options.
+             </summary>
+            
+             <param name="name">The unique name of the resource</param>
+             <param name="args">The arguments used to populate this resource's properties</param>
+             <param name="options">A bag of options that control this resource's behavior</param>
+        </member>
+        <member name="P:Pulumi.Awslbcontroller.AwslbcontrollerArgs.CreateNamespace">
+            <summary>
+            Specifies whether you'd like to create a new namespace to install
+            </summary>
+        </member>
+        <member name="P:Pulumi.Awslbcontroller.AwslbcontrollerArgs.Namespace">
+            <summary>
+            Specifies the namespace to install your resources in
+            </summary>
+        </member>
+        <member name="M:Pulumi.Awslbcontroller.Provider.#ctor(System.String,Pulumi.Awslbcontroller.ProviderArgs,Pulumi.CustomResourceOptions)">
+             <summary>
+             Create a Provider resource with the given unique name, arguments, and options.
+             </summary>
+            
+             <param name="name">The unique name of the resource</param>
+             <param name="args">The arguments used to populate this resource's properties</param>
+             <param name="options">A bag of options that control this resource's behavior</param>
+        </member>
+    </members>
+</doc>

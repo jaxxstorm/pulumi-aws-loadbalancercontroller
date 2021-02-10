@@ -1,0 +1,12 @@
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/bin/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.deps.json
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/bin/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.dll
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/bin/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.pdb
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/bin/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.xml
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/obj/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.csprojAssemblyReference.cache
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/obj/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.AssemblyInfoInputs.cache
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/obj/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.AssemblyInfo.cs
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/obj/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.csproj.CoreCompileInputs.cache
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/obj/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.sourcelink.json
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/obj/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.dll
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/obj/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.xml
+/Users/lbriggs/src/git/jaxxstorm/pulumi-aws-loadbalancercontroller/sdk/dotnet/obj/Debug/netcoreapp3.1/Pulumi.Awslbcontroller.pdb
