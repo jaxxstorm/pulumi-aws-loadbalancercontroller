@@ -45,12 +45,21 @@ class Awslbcontroller(pulumi.ComponentResource):
             __props__ = dict()
 
             __props__['namespace'] = namespace
+            __props__['namespace_id'] = None
         super(Awslbcontroller, __self__).__init__(
             'awslbcontroller:index:awslbcontroller',
             resource_name,
             __props__,
             opts,
             remote=True)
+
+    @property
+    @pulumi.getter(name="namespaceId")
+    def namespace_id(self) -> pulumi.Output[str]:
+        """
+        The ID of the namespace resources.
+        """
+        return pulumi.get(self, "namespace_id")
 
     def translate_output_property(self, prop):
         return _tables.CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop

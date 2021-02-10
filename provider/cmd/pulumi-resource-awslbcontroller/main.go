@@ -73,6 +73,8 @@ func constructLbcontroller(ctx *pulumi.Context, typ, name string, inputs *pulumi
 
 	return pulumi.ConstructResult{
 		URN:   lbcontroller.URN(),
-		State: pulumi.Map{},
+		State: pulumi.Map{
+			"namespaceId": lbcontroller.ID,
+		},
 	}, nil
 }

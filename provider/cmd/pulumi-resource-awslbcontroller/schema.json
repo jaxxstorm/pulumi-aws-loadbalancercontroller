@@ -13,6 +13,15 @@
     "provider": {},
     "resources": {
         "awslbcontroller:index:awslbcontroller": {
+            "properties": {
+                "namespaceId": {
+                    "type": "string",
+                    "description": "The ID of the namespace resources."
+                }
+            },
+            "required": [
+                "namespaceId"
+            ],
             "inputProperties": {
                 "namespace": {
                     "type": "string",

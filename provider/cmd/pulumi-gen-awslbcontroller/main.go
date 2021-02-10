@@ -88,13 +88,15 @@ func generateSchema() schema.PackageSpec {
 			"awslbcontroller:index:awslbcontroller": {
 				IsComponent: true,
 				ObjectTypeSpec: schema.ObjectTypeSpec{
-					/*
-					 Defines the output properties
-					 you can also reference an output property from another resource
-					 which is done via referencing the schema
-					 can also be an input
-					 see EKS list
-					*/
+					Properties: map[string]schema.PropertySpec{
+						"namespaceId": {
+							TypeSpec:    schema.TypeSpec{Type: "string"},
+							Description: "The ID of the namespace resources.",
+						},
+					},
+					Required: []string{
+						"namespaceId",
+					},
 				},
 				InputProperties: map[string]schema.PropertySpec{
 					"namespace": {

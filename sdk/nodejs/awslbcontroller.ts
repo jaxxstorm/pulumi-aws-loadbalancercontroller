@@ -19,6 +19,10 @@ export class Awslbcontroller extends pulumi.ComponentResource {
         return obj['__pulumiType'] === Awslbcontroller.__pulumiType;
     }
 
+    /**
+     * The ID of the namespace resources.
+     */
+    public /*out*/ readonly namespaceId!: pulumi.Output<string>;
 
     /**
      * Create a Awslbcontroller resource with the given unique name, arguments, and options.
@@ -31,7 +35,9 @@ export class Awslbcontroller extends pulumi.ComponentResource {
         let inputs: pulumi.Inputs = {};
         if (!(opts && opts.id)) {
             inputs["namespace"] = args ? args.namespace : undefined;
+            inputs["namespaceId"] = undefined /*out*/;
         } else {
+            inputs["namespaceId"] = undefined /*out*/;
         }
         if (!opts) {
             opts = {}

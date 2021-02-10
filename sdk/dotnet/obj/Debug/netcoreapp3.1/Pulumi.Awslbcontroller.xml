@@ -4,6 +4,11 @@
         <name>Pulumi.Awslbcontroller</name>
     </assembly>
     <members>
+        <member name="P:Pulumi.Awslbcontroller.Awslbcontroller.NamespaceId">
+            <summary>
+            The ID of the namespace resources.
+            </summary>
+        </member>
         <member name="M:Pulumi.Awslbcontroller.Awslbcontroller.#ctor(System.String,Pulumi.Awslbcontroller.AwslbcontrollerArgs,Pulumi.ComponentResourceOptions)">
              <summary>
              Create a Awslbcontroller resource with the given unique name, arguments, and options.

@@ -23,6 +23,7 @@ import (
 type LBController struct {
 	pulumi.ResourceState
 
+	ID pulumi.IDOutput
 	Namespace *corev1.Namespace
 }
 
@@ -59,14 +60,14 @@ func NewLBController(ctx *pulumi.Context,
 		why? How do i convert this into this situation?
 	*/
 
-	/*
+	component.ID = component.Namespace.ID()
+
 	err = ctx.RegisterResourceOutputs(component, pulumi.Map{
-		"namespaceName": component.Namespace.Metadata.Name(), // this currently seems to panic, so I'm not setting this correctly
+		"namespaceId": component.Namespace.ID(),
 	})
 	if err != nil {
 		return nil, err
 	}
-	*/
 
 	return component, nil
 }

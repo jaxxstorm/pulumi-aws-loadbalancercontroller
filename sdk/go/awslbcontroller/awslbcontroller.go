@@ -12,6 +12,9 @@ import (
 
 type Awslbcontroller struct {
 	pulumi.ResourceState
+
+	// The ID of the namespace resources.
+	NamespaceId pulumi.StringOutput `pulumi:"namespaceId"`
 }
 
 // NewAwslbcontroller registers a new resource with the given unique name, arguments, and options.

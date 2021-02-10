@@ -13,6 +13,13 @@ namespace Pulumi.Awslbcontroller
     public partial class Awslbcontroller : Pulumi.ComponentResource
     {
         /// <summary>
+        /// The ID of the namespace resources.
+        /// </summary>
+        [Output("namespaceId")]
+        public Output<string> NamespaceId { get; private set; } = null!;
+
+
+        /// <summary>
         /// Create a Awslbcontroller resource with the given unique name, arguments, and options.
         /// </summary>
         ///

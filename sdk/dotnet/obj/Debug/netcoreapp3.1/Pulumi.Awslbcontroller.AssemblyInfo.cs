@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Pulumi Amazon Web Services (AWS) Kubernetes Load Balancer Controller Component")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.0.1.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.0.1+35a117958494de06717e4edcd6a6f5ace6e56b64")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.0.1+8cebbf815450db22fff466211c54a6de2e1426f7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Pulumi.Awslbcontroller")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Pulumi.Awslbcontroller")]
 [assembly: System.Reflection.AssemblyVersionAttribute("0.0.1.0")]
