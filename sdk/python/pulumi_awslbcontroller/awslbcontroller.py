@@ -15,7 +15,6 @@ class Awslbcontroller(pulumi.ComponentResource):
     def __init__(__self__,
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
-                 create_namespace: Optional[pulumi.Input[bool]] = None,
                  namespace: Optional[pulumi.Input[str]] = None,
                  __props__=None,
                  __name__=None,
@@ -24,7 +23,6 @@ class Awslbcontroller(pulumi.ComponentResource):
         Create a Awslbcontroller resource with the given unique name, props, and options.
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[bool] create_namespace: Specifies whether you'd like to create a new namespace to install
         :param pulumi.Input[str] namespace: Specifies the namespace to install your resources in
         """
         if __name__ is not None:
@@ -46,7 +44,6 @@ class Awslbcontroller(pulumi.ComponentResource):
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = dict()
 
-            __props__['create_namespace'] = create_namespace
             __props__['namespace'] = namespace
         super(Awslbcontroller, __self__).__init__(
             'awslbcontroller:index:awslbcontroller',

@@ -206,7 +206,7 @@
           "lib/netcoreapp3.1/Pulumi.dll": {}
         }
       },
-      "Pulumi.Aws/3.28.0": {
+      "Pulumi.Aws/3.28.1": {
         "type": "package",
         "dependencies": {
           "Pulumi": "2.20.0",
@@ -1769,10 +1769,10 @@
         "pulumi_logo_64x64.png"
       ]
     },
-    "Pulumi.Aws/3.28.0": {
-      "sha512": "NRAYILvcGXdLw3ZOdC3hxB0geJHqtst1PcScUaJxJfVxTA9XUCMOwmUuFni9NByaHznhYSHcLgS6eMzLuOp7+A==",
+    "Pulumi.Aws/3.28.1": {
+      "sha512": "EqiV04+RK9ziNyncxce+4MEg5IZ9whsaGjl5kH6OGfGonyNU+WzZIGx9UvOEKghJP61lF23aZCo37EuEsnj2sA==",
       "type": "package",
-      "path": "pulumi.aws/3.28.0",
+      "path": "pulumi.aws/3.28.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1782,7 +1782,7 @@
         "lib/netcoreapp3.1/Pulumi.Aws.pdb",
         "lib/netcoreapp3.1/Pulumi.Aws.xml",
         "logo.png",
-        "pulumi.aws.3.28.0.nupkg.sha512",
+        "pulumi.aws.3.28.1.nupkg.sha512",
         "pulumi.aws.nuspec"
       ]
     },

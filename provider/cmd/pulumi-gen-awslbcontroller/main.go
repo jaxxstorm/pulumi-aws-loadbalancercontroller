@@ -89,17 +89,17 @@ func generateSchema() schema.PackageSpec {
 				IsComponent: true,
 				ObjectTypeSpec: schema.ObjectTypeSpec{
 					/*
-					 FIXME: It's not super clear how this is meant to be populated and by what
+					 Defines the output properties
+					 you can also reference an output property from another resource
+					 which is done via referencing the schema
+					 can also be an input
+					 see EKS list
 					*/
 				},
 				InputProperties: map[string]schema.PropertySpec{
 					"namespace": {
 						TypeSpec: schema.TypeSpec{Type: "string"},
 						Description: "Specifies the namespace to install your resources in",
-					},
-					"createNamespace": {
-						TypeSpec: schema.TypeSpec{Type: "boolean"},
-						Description: "Specifies whether you'd like to create a new namespace to install",
 					},
 				},
 			},

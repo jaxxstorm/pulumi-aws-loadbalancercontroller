@@ -25,9 +25,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Content Include="$(NuGetPackageRoot)pulumi.aws/3.28.0/contentFiles/any/netcoreapp3.1/version.txt" Condition="Exists('$(NuGetPackageRoot)pulumi.aws/3.28.0/contentFiles/any/netcoreapp3.1/version.txt')">
+    <Content Include="$(NuGetPackageRoot)pulumi.aws/3.28.1/contentFiles/any/netcoreapp3.1/version.txt" Condition="Exists('$(NuGetPackageRoot)pulumi.aws/3.28.1/contentFiles/any/netcoreapp3.1/version.txt')">
       <NuGetPackageId>Pulumi.Aws</NuGetPackageId>
-      <NuGetPackageVersion>3.28.0</NuGetPackageVersion>
+      <NuGetPackageVersion>3.28.1</NuGetPackageVersion>
       <NuGetItemType>Content</NuGetItemType>
       <Private>False</Private>
       <Link>version.txt</Link>

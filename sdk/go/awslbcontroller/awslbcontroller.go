@@ -30,16 +30,12 @@ func NewAwslbcontroller(ctx *pulumi.Context,
 }
 
 type awslbcontrollerArgs struct {
-	// Specifies whether you'd like to create a new namespace to install
-	CreateNamespace *bool `pulumi:"createNamespace"`
 	// Specifies the namespace to install your resources in
 	Namespace *string `pulumi:"namespace"`
 }
 
 // The set of arguments for constructing a Awslbcontroller resource.
 type AwslbcontrollerArgs struct {
-	// Specifies whether you'd like to create a new namespace to install
-	CreateNamespace pulumi.BoolPtrInput
 	// Specifies the namespace to install your resources in
 	Namespace pulumi.StringPtrInput
 }

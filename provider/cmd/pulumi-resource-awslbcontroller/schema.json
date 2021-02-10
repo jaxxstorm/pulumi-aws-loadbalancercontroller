@@ -14,10 +14,6 @@
     "resources": {
         "awslbcontroller:index:awslbcontroller": {
             "inputProperties": {
-                "createNamespace": {
-                    "type": "boolean",
-                    "description": "Specifies whether you'd like to create a new namespace to install"
-                },
                 "namespace": {
                     "type": "string",
                     "description": "Specifies the namespace to install your resources in"

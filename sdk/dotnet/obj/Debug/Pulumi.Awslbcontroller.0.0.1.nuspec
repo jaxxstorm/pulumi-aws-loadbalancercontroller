@@ -10,11 +10,11 @@
     <icon>logo.png</icon>
     <projectUrl>https://pulumi.com/</projectUrl>
     <description>Pulumi Amazon Web Services (AWS) Kubernetes Load Balancer Controller Component</description>
-    <repository type="git" url="https://github.com/jaxxstorm/pulumi-aws-loadbalancercontroller" commit="4da53fb245ef04fdada76f84a40b19e97a1ab49e" />
+    <repository type="git" url="https://github.com/jaxxstorm/pulumi-aws-loadbalancercontroller" commit="35a117958494de06717e4edcd6a6f5ace6e56b64" />
     <dependencies>
       <group targetFramework=".NETCoreApp3.1">
         <dependency id="Pulumi" version="2.20.0" exclude="Build,Analyzers" />
-        <dependency id="Pulumi.Aws" version="3.28.0" exclude="Build,Analyzers" />
+        <dependency id="Pulumi.Aws" version="3.28.1" exclude="Build,Analyzers" />
         <dependency id="Pulumi.Kubernetes" version="2.8.0" exclude="Build,Analyzers" />
       </group>
     </dependencies>

@@ -67,14 +67,12 @@ func constructLbcontroller(ctx *pulumi.Context, typ, name string, inputs *pulumi
 	}
 
 	/*
-	    FIXME: 
-		How is this meant to be populated?
+		    FIXME:
+			How is this meant to be populated?
 	*/
 
 	return pulumi.ConstructResult{
-		URN: lbcontroller.URN(),
-		State: pulumi.Map{
-			"lbcontrollerId":       lbcontroller.ID,
-		},
+		URN:   lbcontroller.URN(),
+		State: pulumi.Map{},
 	}, nil
 }

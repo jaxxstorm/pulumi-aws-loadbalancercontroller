@@ -40,12 +40,6 @@ namespace Pulumi.Awslbcontroller
     public sealed class AwslbcontrollerArgs : Pulumi.ResourceArgs
     {
         /// <summary>
-        /// Specifies whether you'd like to create a new namespace to install
-        /// </summary>
-        [Input("createNamespace")]
-        public Input<bool>? CreateNamespace { get; set; }
-
-        /// <summary>
         /// Specifies the namespace to install your resources in
         /// </summary>
         [Input("namespace")]

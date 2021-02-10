@@ -63,9 +63,9 @@
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
 "@pulumi/aws@^3.28.0":
-  version "3.28.0"
-  resolved "https://registry.yarnpkg.com/@pulumi/aws/-/aws-3.28.0.tgz#e8fa382e17f4e4e158f24fefbd3850555defd755"
-  integrity sha512-xLM8TkdY37MJ4T7kaHjyHzpqQzNuY/WiHMZn3/FB7FQcLpBdfLu8+/0GcBUworuJpDu5pXfhbGjZiHq3KEo9uA==
+  version "3.28.1"
+  resolved "https://registry.yarnpkg.com/@pulumi/aws/-/aws-3.28.1.tgz#b7af83847dc1b4d8f45e14adcf460b794e121d03"
+  integrity sha512-nrsADYi4Hxxh3skb6eKyFD642F67Nnnwj3kCo9BaUt95eQBXnaqideyvN6zQ6R7iv5dQO3l8g4rqMU43LdDJ5Q==
   dependencies:
     "@pulumi/pulumi" "^2.17.0"
     aws-sdk "^2.0.0"
@@ -780,14 +780,14 @@ ts-node@^7.0.1:
     yn "^2.0.0"
 
 typescript@^3.7.0:
-  version "3.9.8"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.8.tgz#7d937ba4e4044af7fa83d127b982f8f61ca816a4"
-  integrity sha512-nDbnFkUZZjkQ92qwKX+C+jtk4OGfU8H9toSEs3uAsl8cxLjG2sqQm6leF/pLWvm9FAEJ6KHkYMAbHYaY2ITeVg==
+  version "3.9.9"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.9.tgz#e69905c54bc0681d0518bd4d587cc6f2d0b1a674"
+  integrity sha512-kdMjTiekY+z/ubJCATUPlRDl39vXYiMV9iyeMuEuXZh2we6zz80uovNN2WlAxmmdE/Z/YQe+EbOEXB5RHEED3w==
 
 typescript@~3.7.3:
-  version "3.7.6"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.6.tgz#dc0404270a2819593cb184cd49ff06e7d3854e75"
-  integrity sha512-EN/xStKHt+xi97N9SdoxbWgcTEMbcLNPK2GmTz93IOR067it9BX4bkhRSJdDSc2et05XF72ngCVCOrjaM0J+dA==
+  version "3.7.7"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.7.tgz#c931733e2ec10dda56b855b379cc488a72a81199"
+  integrity sha512-MmQdgo/XenfZPvVLtKZOq9jQQvzaUAUpcKW8Z43x9B2fOm4S5g//tPtMweZUIP+SoBqrVPEIm+dJeQ9dfO0QdA==
 
 upath@^1.1.0:
   version "1.2.0"

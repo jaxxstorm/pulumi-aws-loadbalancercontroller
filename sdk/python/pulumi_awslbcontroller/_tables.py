@@ -3,9 +3,7 @@
 # *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 SNAKE_TO_CAMEL_CASE_TABLE = {
-    "create_namespace": "createNamespace",
 }
 
 CAMEL_TO_SNAKE_CASE_TABLE = {
-    "createNamespace": "create_namespace",
 }

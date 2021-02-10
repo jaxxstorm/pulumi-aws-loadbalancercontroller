@@ -23,7 +23,6 @@ import (
 type LBController struct {
 	pulumi.ResourceState
 
-	ID pulumi.IDOutput
 	Namespace *corev1.Namespace
 }
 
@@ -39,43 +38,40 @@ func NewLBController(ctx *pulumi.Context,
 		return nil, err
 	}
 
-	createNamespace := args.CreateNamespace
-
 	namespace := args.Namespace
 	if namespace == nil {
-		namespace = pulumi.String("kube-system")
+		namespace = pulumi.String("aws-lb-controller")
 	}
 
-	if createNamespace {
-		component.Namespace, err = corev1.NewNamespace(ctx, name, &corev1.NamespaceArgs{
-			Metadata: &metav1.ObjectMetaArgs{
-				Name: args.Namespace,
-			},
-		}, pulumi.Parent(component))
-		if err != nil {
-			return nil, err
-		}
+	component.Namespace, err = corev1.NewNamespace(ctx, name, &corev1.NamespaceArgs{
+		Metadata: &metav1.ObjectMetaArgs{
+			Name: args.Namespace,
+		},
+	}, pulumi.Parent(component))
+	if err != nil {
+		return nil, err
 	}
 
 	/*
-	FIXME:
-	from the example component, this happens
-	component.ID = component.Vpc.ID()
-	why? How do i convert this into this situation?
+		FIXME:
+		from the example component, this happens
+		component.ID = component.Vpc.ID()
+		why? How do i convert this into this situation?
 	*/
 
+	/*
 	err = ctx.RegisterResourceOutputs(component, pulumi.Map{
 		"namespaceName": component.Namespace.Metadata.Name(), // this currently seems to panic, so I'm not setting this correctly
 	})
 	if err != nil {
 		return nil, err
 	}
+	*/
 
 	return component, nil
 }
 
 // The set of arguments for constructing a LBController component.
 type LBControllerArgs struct {
-	CreateNamespace bool
 	Namespace       pulumi.StringInput `pulumi:"namespace"`
 }

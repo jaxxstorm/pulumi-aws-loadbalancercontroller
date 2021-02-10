@@ -30,7 +30,6 @@ export class Awslbcontroller extends pulumi.ComponentResource {
     constructor(name: string, args?: AwslbcontrollerArgs, opts?: pulumi.ComponentResourceOptions) {
         let inputs: pulumi.Inputs = {};
         if (!(opts && opts.id)) {
-            inputs["createNamespace"] = args ? args.createNamespace : undefined;
             inputs["namespace"] = args ? args.namespace : undefined;
         } else {
         }
@@ -49,10 +48,6 @@ export class Awslbcontroller extends pulumi.ComponentResource {
  * The set of arguments for constructing a Awslbcontroller resource.
  */
 export interface AwslbcontrollerArgs {
-    /**
-     * Specifies whether you'd like to create a new namespace to install
-     */
-    readonly createNamespace?: pulumi.Input<boolean>;
     /**
      * Specifies the namespace to install your resources in
      */

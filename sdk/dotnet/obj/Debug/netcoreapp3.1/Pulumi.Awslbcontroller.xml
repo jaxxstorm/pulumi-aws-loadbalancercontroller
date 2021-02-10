@@ -13,11 +13,6 @@
              <param name="args">The arguments used to populate this resource's properties</param>
              <param name="options">A bag of options that control this resource's behavior</param>
         </member>
-        <member name="P:Pulumi.Awslbcontroller.AwslbcontrollerArgs.CreateNamespace">
-            <summary>
-            Specifies whether you'd like to create a new namespace to install
-            </summary>
-        </member>
         <member name="P:Pulumi.Awslbcontroller.AwslbcontrollerArgs.Namespace">
             <summary>
             Specifies the namespace to install your resources in
